@@ -22,7 +22,7 @@ class UserRegistration(APIView):
             serl = UserSerializer(data=request.data)
             if serl.is_valid():
                 serl.save()
-                # serl.data.pop("password")
+                
                 referrer.referral_count+=1
                 referrer.save()
                 
@@ -42,6 +42,7 @@ class UserRegistration(APIView):
                 referral_serl.save()
                 
             else:
+                user.delete()
                 return Response(referral_serl.errors,status=status.HTTP_400_BAD_REQUEST)
             profile_data = {
                 "user" : user.id,
@@ -50,8 +51,9 @@ class UserRegistration(APIView):
             profile_serializer = ProfileSerializer(data=profile_data)
             if profile_serializer.is_valid():
                 profile_serializer.save()
-                return Response(serl.data,status=status.HTTP_200_OK)
+                return Response({"Message": "Successfully Registered !", "user_id": serl.data["id"]},status=status.HTTP_201_CREATED)
             return Response(profile_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        
         else :
             serl = UserSerializer(data=request.data)
             if serl.is_valid():
@@ -65,7 +67,7 @@ class UserRegistration(APIView):
                 profile_serializer = ProfileSerializer(data=profile_data)
                 if profile_serializer.is_valid():
                     profile_serializer.save()
-                    return Response(serl.data,status=status.HTTP_201_CREATED)
+                    return Response({"Message": "Successfully Registered !", "user_id": serl.data["id"]},status=status.HTTP_201_CREATED)
                 else :
                     return Response(profile_serializer.errors,status=status.HTTP_400_BAD_REQUEST)
             return Response(serl.errors,status=status.HTTP_400_BAD_REQUEST)
