@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.pagination import PageNumberPagination
     
 class UserRegistration(APIView):
     def post(self,request,*args, **kwargs):
@@ -88,9 +88,14 @@ class UserDetailsAPIView(APIView):
 
 class ReferredUsers(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
     
     def get(self,request,*args, **kwargs):
         data = Referral.objects.filter(referrer=request.user)
-        serl = ReferralSerializer(data,many=True)
-        return Response(serl.data,status=status.HTTP_200_OK)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(data, request)
+        
+        serl = ReferralSerializer(result_page, many=True)
+        
+        return paginator.get_paginated_response(serl.data)
     
